@@ -26,7 +26,8 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from . import wol
+    from . import wol, db
     app.register_blueprint(wol.bp)
+    db.init_app(app)
 
     return app
