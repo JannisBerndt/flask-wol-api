@@ -8,13 +8,13 @@ bp = Blueprint('wol', __name__, url_prefix='/wol')
 @bp.route('/wake', methods=['POST'])
 @cross_origin()
 def wake():
+    errors = ""
     try:
         mac_address = request.form.get('mac-address').upper()
         dst_ip = request.form.get('ip-address')
-        dst_port = int(request.form.get('port'))
+        dst_port = request.form.get('port')
         secureOn = request.form.get('secureon')
 
-        errors = ""
         if len(secureOn) != 6:
             errors += "The SecureOn password has to be 6 characters long."
         preset = db.query_db("SELECT * FROM presets WHERE secureOn = ?", [secureOn], True)
@@ -30,6 +30,7 @@ def wake():
                     dst_ip = socket.gethostbyname(dst_ip)
                 except:
                     errors += "Unable to resolve Hostname."
+            dst_port = int(dst_port)
             if not -1 < dst_port < 65536 :
                 errors += "Invalid Port. Port has to be between 0 and 65535. "
             if errors != "":
