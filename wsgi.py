@@ -1,4 +1,6 @@
-from app.main import app 
+from app.main import app
+from app import db
 
 if __name__ == "__main__": 
-		app.run() 
+        app.run()
+        db.init_db()
