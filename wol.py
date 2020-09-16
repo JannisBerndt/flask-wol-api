@@ -1,7 +1,6 @@
 from flask import Blueprint, request
 from flask_cors import cross_origin
 import socket, re, json, hashlib
-from . import db
 
 bp = Blueprint('wol', __name__, url_prefix='/wol')
 
