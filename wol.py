@@ -16,7 +16,7 @@ def wake():
     try:
         mac_address = str(request.form.get('mac-address').upper())
         dst_ip = str(request.form.get('ip-address'))
-        dst_port = int(request.form.get('port'))
+        dst_port = int(request.form.get('port')) if request.form.get('port') else None
         secureOn = str(request.form.get('secureon'))
         app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureOn)
     except Exception as e:
@@ -32,7 +32,7 @@ def wake():
                 return json.dumps({
                     'message': "The SecureOn password has to be 6 characters long."
                 }), 400
-            preset = Preset.query.filter_by(secureOn=secureOn).all()
+            preset = Preset.query.filter_by(secureon=secureOn).all()
             if len(preset) > 1:
                 return json.dumps({
                         'message': "The given password belongs to multiple presets! This is not allowed."
@@ -42,10 +42,15 @@ def wake():
                 return json.dumps({
                         'message': "The given password does not match any preset! Please provide a correct password or all the information needed to send a packet without a preset."
                     }), 400
-            app.logger.info('Preset: ' + preset)
-            mac_address = preset["mac_address"]
-            dst_ip = preset["ip_or_hostname"]
-            dst_port = preset["port"]
+            #app.logger.info('Preset: ' + preset)
+            mac_address = preset.mac_address
+            dst_ip = preset.ip_or_hostname
+            dst_port = preset.port
+            if not "".join(dst_ip.split('.')).isnumeric():
+                try:
+                    dst_ip = socket.gethostbyname(dst_ip)
+                except:
+                    errors += "Unable to resolve Hostname. "
         elif mac_address and dst_ip and dst_port:
             if re.match(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', mac_address) is None:
                 errors += "Invalid Mac Address. You need 12 Hex numbers and 5 colons. "
