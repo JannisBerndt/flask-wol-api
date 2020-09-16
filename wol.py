@@ -14,10 +14,10 @@ bp = Blueprint('wol', __name__, url_prefix='/wol')
 def wake():
     errors = ""
     try:
-        mac_address = str(request.form.get('mac-address').upper() or None)
-        dst_ip = str(request.form.get('ip-address') or None)
-        dst_port = int(request.form.get('port') or None)
-        secureOn = str(request.form.get('secureon') or None)
+        mac_address = str(request.form.get('mac-address').upper())
+        dst_ip = str(request.form.get('ip-address'))
+        dst_port = int(request.form.get('port'))
+        secureOn = str(request.form.get('secureon'))
         app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureOn)
     except Exception as e:
         app.logger.error(e)
@@ -27,7 +27,7 @@ def wake():
 
     try:
         # Use presets only if the password is the only given value. Else, every value apart from the optional secureOn has to be specifid. Otherwise its an error.
-        if mac_address is None and dst_ip is None and dst_port is None and secureOn is not None:
+        if not mac_address and not dst_ip and not dst_port and secureOn:
             if len(secureOn) != 6:
                 return json.dumps({
                     'message': "The SecureOn password has to be 6 characters long."
@@ -46,7 +46,7 @@ def wake():
             mac_address = preset["mac_address"]
             dst_ip = preset["ip_or_hostname"]
             dst_port = preset["port"]
-        elif mac_address is not None and dst_ip is not None and dst_port is not None:
+        elif mac_address and dst_ip and dst_port:
             if re.match(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', mac_address) is None:
                 errors += "Invalid Mac Address. You need 12 Hex numbers and 5 colons. "
             if not "".join(dst_ip.split('.')).isnumeric():
@@ -56,7 +56,7 @@ def wake():
                     errors += "Unable to resolve Hostname."
             if not -1 < dst_port < 65536 :
                 errors += "Invalid Port. Port has to be between 0 and 65535. "
-            if secureOn is not None and len(secureOn) != 6:
+            if secureOn and len(secureOn) != 6:
                 errors += "The SecureOn password has to be 6 characters long."
             if errors != "":
                 return json.dumps({
@@ -74,7 +74,7 @@ def wake():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.sendto(bytearray.fromhex(packetData), (dst_ip, dst_port))
     except Exception as e:
-        print(e)
+        app.logger.error(e)
         errors += "Something went wrong. Please make sure you provided 1. a MAC Address with 6 blocks of two hex numbers separated by colons, 2. a valid IP address in dotted decimal notation or a hostname of you choice and 3. a port between 0 and 65535. Optionally you can also provide a secureOn password, which has to be 6 characters long."
         return json.dumps({
             'message': errors
