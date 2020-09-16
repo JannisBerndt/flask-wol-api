@@ -52,18 +52,14 @@ def wake():
                 except:
                     errors += "Unable to resolve Hostname. "
         elif mac_address and dst_ip and dst_port:
-            if re.match(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', mac_address) is None:
-                errors += "Invalid Mac Address. You need 12 Hex numbers and 5 colons. "
+            errors += validateMACAddress(mac_address)
             if not "".join(dst_ip.split('.')).isnumeric():
                 try:
                     dst_ip = socket.gethostbyname(dst_ip)
                 except:
                     errors += "Unable to resolve Hostname. "
-            # RegEx from https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
-            elif re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', dst_ip) is None:
-                errors += "Invalid IP Address. Please use dottet decimal notation with numbers in the IPv4 range. "
-            if not -1 < dst_port < 65536 :
-                errors += "Invalid Port. Port has to be between 0 and 65535. "
+            errors += validateIPAddress(dst_ip)
+            errors += validatePort(dst_port)
             if secureon and len(secureon) != 6:
                 errors += "The SecureOn password has to be 6 characters long."
             if errors:
@@ -95,3 +91,19 @@ def wake():
 @cross_origin()
 def add_preset():
     pass
+
+def validateMACAddress(mac_address):
+    if re.match(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', mac_address) is None:
+        return "Invalid Mac Address. You need 12 Hex numbers and 5 colons. "
+    return ""
+
+def validateIPAddress(ip_address):
+    # RegEx from https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
+    if re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip_address) is None:
+        return "Invalid IP Address. Please use dottet decimal notation with numbers in the IPv4 range. "
+    return ""
+
+def validatePort(port):
+    if not -1 < port < 65536 :
+        return "Invalid Port. Port has to be between 0 and 65535. "
+    return ""
