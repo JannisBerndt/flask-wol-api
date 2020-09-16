@@ -17,8 +17,8 @@ def wake():
         mac_address = str(request.form.get('mac-address').upper())
         dst_ip = str(request.form.get('ip-address'))
         dst_port = int(request.form.get('port')) if request.form.get('port') else None
-        secureOn = str(request.form.get('secureon'))
-        app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureOn)
+        secureon = str(request.form.get('secureon'))
+        app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureon)
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
@@ -26,13 +26,13 @@ def wake():
         }), 400
 
     try:
-        # Use presets only if the password is the only given value. Else, every value apart from the optional secureOn has to be specifid. Otherwise its an error.
-        if not mac_address and not dst_ip and not dst_port and secureOn:
-            if len(secureOn) != 6:
+        # Use presets only if the password is the only given value. Else, every value apart from the optional secureon has to be specifid. Otherwise its an error.
+        if not mac_address and not dst_ip and not dst_port and secureon:
+            if len(secureon) != 6:
                 return json.dumps({
-                    'message': "The SecureOn password has to be 6 characters long."
+                    'message': "The secureOn password has to be 6 characters long."
                 }), 400
-            preset = Preset.query.filter_by(secureon=secureOn).all()
+            preset = Preset.query.filter_by(secureon=secureon).all()
             if len(preset) > 1:
                 return json.dumps({
                         'message': "The given password belongs to multiple presets! This is not allowed."
@@ -64,7 +64,7 @@ def wake():
                 errors += "Invalid IP Address. Please use dottet decimal notation with numbers in the IPv4 range. "
             if not -1 < dst_port < 65536 :
                 errors += "Invalid Port. Port has to be between 0 and 65535. "
-            if secureOn and len(secureOn) != 6:
+            if secureon and len(secureon) != 6:
                 errors += "The SecureOn password has to be 6 characters long."
             if errors:
                 return json.dumps({
@@ -75,9 +75,9 @@ def wake():
                 'message': 'You are missing some important information. Please either provide a valid MAC Adress, IP and Port or a secureOn password with nothing else.'
             }), 400
 
-        secureOn = secureOn.encode('ASCII').hex()
+        secureon = secureon.encode('ASCII').hex()
         mac_address = "".join(mac_address.split(':'))
-        packetData = "FFFFFFFFFFFF" + "".join([mac_address]*16) + secureOn
+        packetData = "FFFFFFFFFFFF" + "".join([mac_address]*16) + secureon
         app.logger.info(packetData)
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.sendto(bytearray.fromhex(packetData), (dst_ip, dst_port))
