@@ -1,6 +1,11 @@
 from flask import Blueprint, request
 from flask_cors import cross_origin
 import socket, re, json, hashlib
+from app import app
+from models import Preset
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 bp = Blueprint('wol', __name__, url_prefix='/wol')
 
@@ -12,11 +17,18 @@ def wake():
         mac_address = request.form.get('mac-address').upper()
         dst_ip = request.form.get('ip-address')
         dst_port = request.form.get('port')
-        secureOn = request.form.get('secureon')
+        secureOn = str(request.form.get('secureon'))
+        app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + dst_port + ", Password: " + secureOn)
 
         if len(secureOn) != 6:
             errors += "The SecureOn password has to be 6 characters long."
-        preset = db.query_db("SELECT * FROM presets WHERE secureOn = ?", [secureOn], True)
+        preset = Preset.query.filter_by(secureOn=secureOn).all()
+        if len(preset) > 1:
+            return json.dumps({
+                    'message': "The given password returns multiple presets!"
+                }), 400
+        preset = preset[0] if preset else None
+        app.logger.info(preset)
         if preset is not None:
             mac_address = preset["mac_address"]
             dst_ip = preset["ip_or_hostname"]

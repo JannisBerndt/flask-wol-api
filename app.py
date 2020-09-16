@@ -11,6 +11,8 @@ db = SQLAlchemy(app)
 from models import Preset
 from wol import bp
 
+app.register_blueprint(bp)
+
 @app.route("/")
 def hello():
     return "Hello World!"
