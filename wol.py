@@ -90,3 +90,8 @@ def wake():
     return json.dumps({
             'message': 'Magic Packet successfully sent.'
         }), 200
+
+@bp.route('/add-preset', methods=['POST'])
+@cross_origin()
+def add_preset():
+    pass
