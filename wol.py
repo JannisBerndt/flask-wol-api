@@ -53,12 +53,15 @@ def wake():
                 try:
                     dst_ip = socket.gethostbyname(dst_ip)
                 except:
-                    errors += "Unable to resolve Hostname."
+                    errors += "Unable to resolve Hostname. "
+            # RegEx from https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
+            elif re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', dst_ip) is None:
+                errors += "Invalid IP Address. Please use dottet decimal notation with numbers in the IPv4 range. "
             if not -1 < dst_port < 65536 :
                 errors += "Invalid Port. Port has to be between 0 and 65535. "
             if secureOn and len(secureOn) != 6:
                 errors += "The SecureOn password has to be 6 characters long."
-            if errors != "":
+            if errors:
                 return json.dumps({
                     'message': errors
                 }), 400
