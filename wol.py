@@ -26,7 +26,7 @@ def wake():
         }), 400
 
     try:
-        # Use presets only if the password is the only given value. Else, every value apart from the optional secureon has to be specifid. Otherwise its an error.
+        # Use presets only if the password is the only given value. Else, every value apart from the optional secureon has to be specified. Otherwise its an error.
         if not mac_address and not dst_ip and not dst_port and secureon:
             if len(secureon) != 6:
                 return json.dumps({
@@ -87,7 +87,7 @@ def wake():
             'message': 'Magic Packet successfully sent.'
         }), 200
 
-@bp.route('/add-preset', methods=['POST'])
+@bp.route('/add', methods=['POST'])
 @cross_origin()
 def add_preset():
     pass
