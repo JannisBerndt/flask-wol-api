@@ -92,6 +92,14 @@ def wake():
 def add_preset():
     pass
 
+@bp.route("/getall")
+def get_all():
+    try:
+        presets=Preset.query.all()
+        return jsonify([e.serialize() for e in presets])
+    except Exception as e:
+	    return(str(e))
+
 def validateMACAddress(mac_address):
     if re.match(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', mac_address) is None:
         return "Invalid Mac Address. You need 12 Hex numbers and 5 colons. "
