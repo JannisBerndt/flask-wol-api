@@ -1,7 +1,7 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_cors import cross_origin
 import socket, re, json, hashlib
-from app import app
+from app import app, db
 from models import Preset
 import logging
 
@@ -90,7 +90,45 @@ def wake():
 @bp.route('/add', methods=['POST'])
 @cross_origin()
 def add_preset():
-    pass
+    errors = ""
+    try:
+        mac_address = str(request.form.get('mac-address').upper())
+        dst_ip = str(request.form.get('ip-address'))
+        dst_port = int(request.form.get('port')) if request.form.get('port') else None
+        secureon = str(request.form.get('secureon'))
+        app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureon)
+    except Exception as e:
+        app.logger.error(e)
+        return json.dumps({
+            'message': 'Unable to parse input data!'
+        }), 400
+    
+    if mac_address and dst_ip and dst_port and secureon:
+        errors += validateMACAddress(mac_address)
+        errors += validatePort(dst_port)
+        if secureon and len(secureon) != 6:
+            errors += "The SecureOn password has to be 6 characters long."
+        if errors:
+            return json.dumps({
+                'message': errors
+            }), 400
+    else:
+        return json.dumps({
+            'message': 'You are missing some important information. Please provide a valid MAC Adress, IP, Port and secureOn password to create a new preset.'
+        }), 400
+    
+    try:
+        preset = Preset(mac_address, dst_ip, dst_port, secureon)
+        db.session.add(preset)
+        db.session.commit()
+        return json.dumps({
+            'message': "New preset successfully added."
+        }), 200
+    except Exception as e:
+        app.logger.error(e)
+        return json.dumps({
+            'message': 'Unable to create this new preset! Please check you input data.'
+        }), 400
 
 @bp.route("/getall")
 def get_all():
