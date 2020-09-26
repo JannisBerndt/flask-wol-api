@@ -87,6 +87,52 @@ def wake():
             'message': 'Magic Packet successfully sent.'
         }), 200
 
+@bp.route('/wakepreset', methods=['POST'])
+@cross_origin()
+def wake_from_preset():
+    try:
+        name = str(request.form.get('name'))
+        secureon = str(request.form.get('secureon'))
+        app.logger.info("Name: " + name + ", Password: " + secureon)
+    except Exception as e:
+        app.logger.error(e)
+        return json.dumps({
+            'message': 'Unable to parse input data!'
+        }), 400
+
+    if len(secureon) != 6:
+        return json.dumps({
+            'message': "The secureOn password has to be 6 characters long."
+        }), 400
+    preset = Preset.query.filter_by(secureon=secureon, name=name).all()
+    if len(preset) != 1:
+        return json.dumps({
+                'message': "The given name and password belong to multiple presets! This is not allowed."
+            }), 400
+    preset = preset[0] if preset else None
+    if preset is None:
+        return json.dumps({
+                'message': "The given name password do not match any preset! Please provide a correct name and password."
+            }), 400
+    mac_address = preset.mac_address
+    dst_ip = preset.ip_or_hostname
+    dst_port = preset.port
+    if not "".join(dst_ip.split('.')).isnumeric():
+        try:
+            dst_ip = socket.gethostbyname(dst_ip)
+        except:
+            errors += "Unable to resolve Hostname. "
+
+    secureon = secureon.encode('ASCII').hex()
+    mac_address = "".join(mac_address.split(':'))
+    packetData = "FFFFFFFFFFFF" + "".join([mac_address]*16) + secureon
+    app.logger.info(packetData)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(bytearray.fromhex(packetData), (dst_ip, dst_port))
+    return json.dumps({
+            'message': 'Magic Packet successfully sent.'
+        }), 200
+
 @bp.route('/add', methods=['POST'])
 @cross_origin()
 def add_preset():
