@@ -107,25 +107,23 @@ def wake_from_preset():
     preset = Preset.query.filter_by(secureon=secureon, name=name).all()
     if len(preset) != 1:
         return json.dumps({
-                'message': "The given name and password belong to multiple presets! This is not allowed."
-            }), 400
+            'message': "The given name and password belong to multiple presets! This is not allowed."
+        }), 400
     preset = preset[0] if preset else None
     if preset is None:
         return json.dumps({
-                'message': "The given name password do not match any preset! Please provide a correct name and password."
-            }), 400
-    mac_address = preset.mac_address
-    dst_ip = preset.ip_or_hostname
-    dst_port = preset.port
+            'message': "The given name password do not match any preset! Please provide a correct name and password."
+        }), 400
+
     try:
-        sendMagicPacket(mac_address, dst_ip, dst_port, secureon)
+        sendMagicPacket(preset.mac_address, preset.ip_or_hostname, preset.port, secureon)
     except Exception as e:
         return json.dumps({
-                'message': e
-            }), 400
+            'message': e
+        }), 400
     return json.dumps({
-            'message': 'Magic Packet successfully sent.'
-        }), 200
+        'message': 'Magic Packet successfully sent.'
+    }), 200
 
 @bp.route('/add', methods=['POST'])
 @cross_origin()
