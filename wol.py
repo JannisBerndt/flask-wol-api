@@ -117,18 +117,12 @@ def wake_from_preset():
     mac_address = preset.mac_address
     dst_ip = preset.ip_or_hostname
     dst_port = preset.port
-    if not "".join(dst_ip.split('.')).isnumeric():
-        try:
-            dst_ip = socket.gethostbyname(dst_ip)
-        except:
-            errors += "Unable to resolve Hostname. "
-
-    secureon = secureon.encode('ASCII').hex()
-    mac_address = "".join(mac_address.split(':'))
-    packetData = "FFFFFFFFFFFF" + "".join([mac_address]*16) + secureon
-    app.logger.info(packetData)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(bytearray.fromhex(packetData), (dst_ip, dst_port))
+    try:
+        sendMagicPacket(mac_address, dst_ip, dst_port, secureon)
+    except Exception as e:
+        return json.dumps({
+                'message': e
+            }), 400
     return json.dumps({
             'message': 'Magic Packet successfully sent.'
         }), 200
@@ -191,3 +185,23 @@ def validatePort(port):
     if not -1 < port < 65536 :
         return "Invalid Port. Port has to be between 0 and 65535. "
     return ""
+
+def sendMagicPacket(mac_address, ip_or_hostname, port, secureon=""):
+    ip = ip_or_hostname
+    if not "".join(ip_or_hostname.split('.')).isnumeric():
+        try:
+            ip = socket.gethostbyname(ip_or_hostname)
+        except Exception as e:
+            app.logger.error(e)
+            raise Exception('Unable to resolve Hostname.')
+    try:
+        secureon = secureon.encode('ASCII').hex()
+        mac_address = "".join(mac_address.split(':'))
+        packetData = "FFFFFFFFFFFF" + "".join([mac_address]*16) + secureon
+        app.logger.info(packetData)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.sendto(bytearray.fromhex(packetData), (ip, port))
+    except Exception as e:
+        app.logger.error(e)
+        raise Exception('Something went wrong when sending your Magic Packet.')
+    return 'Magic Packet successfully sent.'
