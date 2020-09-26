@@ -134,6 +134,7 @@ def add_preset():
         dst_ip = str(request.form.get('ip-or-hostname'))
         dst_port = int(request.form.get('port')) if request.form.get('port') else None
         secureon = str(request.form.get('secureon'))
+        name = str(request.form.get('name'))
         app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureon)
     except Exception as e:
         app.logger.error(e)
@@ -156,7 +157,7 @@ def add_preset():
         }), 400
     
     try:
-        preset = Preset(mac_address, dst_ip, dst_port, secureon)
+        preset = Preset(mac_address, dst_ip, dst_port, secureon, name)
         db.session.add(preset)
         db.session.commit()
         return json.dumps({
