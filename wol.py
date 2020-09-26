@@ -104,7 +104,7 @@ def add_preset():
             'message': 'Unable to parse input data!'
         }), 400
     
-    if mac_address and dst_ip and dst_port and secureon:
+    if mac_address and ip_or_hostname and dst_port and secureon:
         errors += validateMACAddress(mac_address)
         errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else ""
         errors += validatePort(dst_port)
