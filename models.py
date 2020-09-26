@@ -8,12 +8,14 @@ class Preset(db.Model):
     ip_or_hostname = db.Column(db.String())
     port = db.Column(db.Integer)
     secureon = db.Column(db.String())
+    name = db.Column(db.String())
 
-    def __init__(self, mac_address, ip_or_hostname, port, secureon):
+    def __init__(self, mac_address, ip_or_hostname, port, secureon, name):
         self.mac_address = mac_address
         self.ip_or_hostname = ip_or_hostname
         self.port = port
         self.secureon = secureon
+        self.name = name
 
     def serialize(self):
         return {
@@ -21,5 +23,6 @@ class Preset(db.Model):
             "mac_address": self.mac_address,
             "ip_or_hostname": self.ip_or_hostname,
             "port": self.port,
-            "secureon": self.secureon
+            "secureon": self.secureon,
+            "name": self.name
         }
