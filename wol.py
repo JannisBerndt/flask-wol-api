@@ -109,6 +109,8 @@ def add_preset():
         errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else ""
         errors += validatePort(dst_port)
         errors += "The SecureOn password has to be 6 characters long." if secureon and len(secureon) != 6 else ""
+        presets = Preset.query.filter_by(secureon=secureon, name=name).all()
+        errors += "The given name and password belong to multiple presets! This is not allowed." if len(presets) > 0 else ""
         if errors:
             return json.dumps({
                 'message': errors
