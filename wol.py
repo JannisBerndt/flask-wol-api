@@ -12,7 +12,7 @@ bp = Blueprint('wol', __name__, url_prefix='/wol')
 @bp.route('/wake', methods=['POST'])
 @cross_origin()
 def wake():
-    errors = ""
+    errors = []
     try:
         mac_address = str(request.form.get('mac-address').upper())
         ip_or_hostname = str(request.form.get('ip-or-hostname'))
@@ -22,31 +22,31 @@ def wake():
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
-            'message': 'Unable to parse input data!'
+            'message': ['Unable to parse input data!']
         }), 400
 
     try:
         if mac_address and ip_or_hostname and dst_port:
             errors += validateMACAddress(mac_address)
-            errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else ""
+            errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else []
             errors += validatePort(dst_port)
-            errors += "The SecureOn password has to be 6 characters long." if secureon and len(secureon) != 6 else ""
+            errors += ["The SecureOn password has to be 6 characters long."] if secureon and len(secureon) != 6 else []
             if errors:
                 return json.dumps({
                     'message': errors
                 }), 400
         else:
             return json.dumps({
-                'message': 'You are missing some important information. Please either provide a valid MAC Adress, IP and Port or a secureOn password with nothing else.'
+                'message': ['You are missing some important information. Please either provide a valid MAC Adress, IP and Port or a secureOn password with nothing else.']
             }), 400
-        sendMagicPacket(mac_address, ip_or_hostname, port, secureon)
+        sendMagicPacket(mac_address, ip_or_hostname, dst_port, secureon)
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
-            'message': e.args[0]
+            'message': e.args
         }), 400
     return json.dumps({
-            'message': 'Magic Packet successfully sent.'
+            'message': ['Magic Packet successfully sent.']
         }), 200
 
 @bp.route('/wakepreset', methods=['POST'])
@@ -59,38 +59,38 @@ def wake_from_preset():
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
-            'message': 'Unable to parse input data!'
+            'message': ['Unable to parse input data!']
         }), 400
 
     if len(secureon) != 6:
         return json.dumps({
-            'message': "The secureOn password has to be 6 characters long."
+            'message': ['The secureOn password has to be 6 characters long.']
         }), 400
     preset = Preset.query.filter_by(secureon=secureon, name=name).all()
     if len(preset) > 1:
         return json.dumps({
-            'message': "The given name and password belong to multiple presets! This is not allowed."
+            'message': ['The given name and password belong to multiple presets! This is not allowed.']
         }), 400
     preset = preset[0] if preset else None
     if preset is None:
         return json.dumps({
-            'message': "The given name password do not match any preset! Please provide a correct name and password."
+            'message': ['The given name password do not match any preset! Please provide a correct name and password.']
         }), 400
 
     try:
         sendMagicPacket(preset.mac_address, preset.ip_or_hostname, preset.port, secureon)
     except Exception as e:
         return json.dumps({
-            'message': e.args[0]
+            'message': e.args
         }), 400
     return json.dumps({
-        'message': 'Magic Packet successfully sent.'
+        'message': ['Magic Packet successfully sent.']
     }), 200
 
 @bp.route('/add', methods=['POST'])
 @cross_origin()
 def add_preset():
-    errors = ""
+    errors = []
     try:
         mac_address = str(request.form.get('mac-address').upper())
         ip_or_hostname = str(request.form.get('ip-or-hostname'))
@@ -101,23 +101,23 @@ def add_preset():
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
-            'message': 'Unable to parse input data!'
+            'message': ['Unable to parse input data!']
         }), 400
     
     if mac_address and ip_or_hostname and dst_port and secureon:
         errors += validateMACAddress(mac_address)
-        errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else ""
+        errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else []
         errors += validatePort(dst_port)
-        errors += "The SecureOn password has to be 6 characters long." if secureon and len(secureon) != 6 else ""
+        errors += "The SecureOn password has to be 6 characters long." if secureon and len(secureon) != 6 else []
         presets = Preset.query.filter_by(secureon=secureon, name=name).all()
-        errors += "The given name and password belong to multiple presets! This is not allowed." if len(presets) > 0 else ""
+        errors += ["The given name and password belong to multiple presets! This is not allowed."] if len(presets) > 0 else []
         if errors:
             return json.dumps({
                 'message': errors
             }), 400
     else:
         return json.dumps({
-            'message': 'You are missing some important information. Please provide a valid MAC Adress, IP, Port and secureOn password to create a new preset.'
+            'message': ['You are missing some important information. Please provide a valid MAC Adress, IP, Port and secureOn password to create a new preset.']
         }), 400
     
     try:
@@ -125,29 +125,29 @@ def add_preset():
         db.session.add(preset)
         db.session.commit()
         return json.dumps({
-            'message': "New preset successfully added."
+            'message': ['New preset successfully added.']
         }), 200
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
-            'message': 'Unable to create this new preset! Please check you input data.'
+            'message': ['Unable to create this new preset! Please check you input data.']
         }), 400
 
 def validateMACAddress(mac_address):
     if re.match(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', mac_address) is None:
-        return "Invalid Mac Address. You need 12 Hex numbers and 5 colons. "
-    return ""
+        return ["Invalid Mac Address. You need 12 Hex numbers and 5 colons."]
+    return []
 
 def validateIPAddress(ip_address):
     # RegEx from https://www.oreilly.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
     if re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip_address) is None:
-        return "Invalid IP Address. Please use dottet decimal notation with numbers in the IPv4 range. "
-    return ""
+        return ["Invalid IP Address. Please use dottet decimal notation with numbers in the IPv4 range."]
+    return []
 
 def validatePort(port):
     if not -1 < port < 65536 :
-        return "Invalid Port. Port has to be between 0 and 65535. "
-    return ""
+        return ["Invalid Port. Port has to be between 0 and 65535."]
+    return []
 
 def sendMagicPacket(mac_address, ip_or_hostname, port, secureon=""):
     ip = ip_or_hostname
@@ -167,4 +167,4 @@ def sendMagicPacket(mac_address, ip_or_hostname, port, secureon=""):
     except Exception as e:
         app.logger.error(e)
         raise Exception('Something went wrong when sending your Magic Packet.')
-    return 'Magic Packet successfully sent.'
+    return ['Magic Packet successfully sent.']
