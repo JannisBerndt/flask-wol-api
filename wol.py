@@ -28,11 +28,9 @@ def wake():
     try:
         if mac_address and ip_or_hostname and dst_port:
             errors += validateMACAddress(mac_address)
-            if "".join(ip_or_hostname.split('.')).isnumeric():
-                errors += validateIPAddress(ip_or_hostname)
+            errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else ""
             errors += validatePort(dst_port)
-            if secureon and len(secureon) != 6:
-                errors += "The SecureOn password has to be 6 characters long."
+            errors += "The SecureOn password has to be 6 characters long." if secureon and len(secureon) != 6 else ""
             if errors:
                 return json.dumps({
                     'message': errors
@@ -109,8 +107,7 @@ def add_preset():
     if mac_address and dst_ip and dst_port and secureon:
         errors += validateMACAddress(mac_address)
         errors += validatePort(dst_port)
-        if secureon and len(secureon) != 6:
-            errors += "The SecureOn password has to be 6 characters long."
+        errors += "The SecureOn password has to be 6 characters long." if secureon and len(secureon) != 6 else ""
         if errors:
             return json.dumps({
                 'message': errors
