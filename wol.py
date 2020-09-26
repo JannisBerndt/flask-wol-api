@@ -15,7 +15,7 @@ def wake():
     errors = ""
     try:
         mac_address = str(request.form.get('mac-address').upper())
-        dst_ip = str(request.form.get('ip-address'))
+        dst_ip = str(request.form.get('ip-or-hostname'))
         dst_port = int(request.form.get('port')) if request.form.get('port') else None
         secureon = str(request.form.get('secureon'))
         app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureon)
@@ -139,7 +139,7 @@ def add_preset():
     errors = ""
     try:
         mac_address = str(request.form.get('mac-address').upper())
-        dst_ip = str(request.form.get('ip-address'))
+        dst_ip = str(request.form.get('ip-or-hostname'))
         dst_port = int(request.form.get('port')) if request.form.get('port') else None
         secureon = str(request.form.get('secureon'))
         app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureon)
