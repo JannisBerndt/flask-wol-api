@@ -93,11 +93,11 @@ def add_preset():
     errors = ""
     try:
         mac_address = str(request.form.get('mac-address').upper())
-        dst_ip = str(request.form.get('ip-or-hostname'))
+        ip_or_hostname = str(request.form.get('ip-or-hostname'))
         dst_port = int(request.form.get('port')) if request.form.get('port') else None
         secureon = str(request.form.get('secureon'))
         name = str(request.form.get('name'))
-        app.logger.info("MAC: " + mac_address + ", IP: " + dst_ip + ", Port: " + str(dst_port) + ", Password: " + secureon)
+        app.logger.info("MAC: " + mac_address + ", IP or Hostname: " + ip_or_hostname + ", Port: " + str(dst_port) + ", Password: " + secureon)
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
@@ -106,6 +106,7 @@ def add_preset():
     
     if mac_address and dst_ip and dst_port and secureon:
         errors += validateMACAddress(mac_address)
+        errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else ""
         errors += validatePort(dst_port)
         errors += "The SecureOn password has to be 6 characters long." if secureon and len(secureon) != 6 else ""
         if errors:
@@ -118,7 +119,7 @@ def add_preset():
         }), 400
     
     try:
-        preset = Preset(mac_address, dst_ip, dst_port, secureon, name)
+        preset = Preset(mac_address, ip_or_hostname, dst_port, secureon, name)
         db.session.add(preset)
         db.session.commit()
         return json.dumps({
