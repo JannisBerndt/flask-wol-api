@@ -43,7 +43,7 @@ def wake():
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
-            'message': e.args
+            'message': e.args[0]
         }), 400
     return json.dumps({
             'message': 'Magic Packet successfully sent.'
@@ -81,7 +81,7 @@ def wake_from_preset():
         sendMagicPacket(preset.mac_address, preset.ip_or_hostname, preset.port, secureon)
     except Exception as e:
         return json.dumps({
-            'message': e.args
+            'message': e.args[0]
         }), 400
     return json.dumps({
         'message': 'Magic Packet successfully sent.'
