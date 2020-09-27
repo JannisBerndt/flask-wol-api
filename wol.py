@@ -74,7 +74,7 @@ def wake_from_preset():
     preset = preset[0] if preset else None
     if preset is None:
         return json.dumps({
-            'message': ['The given name password do not match any preset! Please provide a correct name and password.']
+            'message': ['The given name and password do not match any preset! Please provide a correct name and password.']
         }), 400
 
     try:
@@ -97,14 +97,14 @@ def add_preset():
         dst_port = int(request.form.get('port')) if request.form.get('port') else None
         secureon = str(request.form.get('secureon'))
         name = str(request.form.get('name'))
-        app.logger.info("MAC: " + mac_address + ", IP or Hostname: " + ip_or_hostname + ", Port: " + str(dst_port) + ", Password: " + secureon)
+        app.logger.info("MAC: " + mac_address + ", IP or Hostname: " + ip_or_hostname + ", Port: " + str(dst_port) + ", Password: " + secureon + ", Name: " + name)
     except Exception as e:
         app.logger.error(e)
         return json.dumps({
             'message': ['Unable to parse input data!']
         }), 400
     
-    if mac_address and ip_or_hostname and dst_port and secureon:
+    if mac_address and ip_or_hostname and dst_port and secureon and name:
         errors += validateMACAddress(mac_address)
         errors += validateIPAddress(ip_or_hostname) if "".join(ip_or_hostname.split('.')).isnumeric() else []
         errors += validatePort(dst_port)
@@ -117,7 +117,7 @@ def add_preset():
             }), 400
     else:
         return json.dumps({
-            'message': ['You are missing some important information. Please provide a valid MAC Adress, IP, Port and secureOn password to create a new preset.']
+            'message': ['You are missing some important information. Please provide a valid MAC Adress, IP, Port, secureOn password and a name to create a new preset.']
         }), 400
     
     try:
