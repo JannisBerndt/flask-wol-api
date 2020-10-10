@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -16,6 +16,11 @@ app.register_blueprint(bp)
 @app.route("/")
 def hello():
     return "Hello World!"
+
+@app.route('/docs/')
+def docs():
+    return render_template('swaggerui.html')
+
 
 if __name__ == '__main__':
     app.run()
