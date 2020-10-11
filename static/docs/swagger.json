@@ -1,15 +1,202 @@
 {
-  "openapi": "3.0.0",
+  "swagger": "2.0",
   "info": {
-    "description": "sean",
-    "version": "1.0.0",
-    "title": "Seans-Python3-Flask-Rest-Boilerplate",
+    "description": "This is a REST API built with flask to send magic packets for Wake on Lan. It uses the security mechanism 'secureOn' if you provide the data for that. You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).",
+    "version": "0.1.0",
+    "title": "Wake on Lan API",
     "contact": {
-      "email": "seanwasere@gmail.com"
+      "email": "mail@jannisberndt.de"
     },
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
     }
+  },
+  "host": "api.wol.jannisberndt.de",
+  "basePath": "/wol",
+  "tags": [
+    {
+      "name": "wol",
+      "description": "Sending bare magic packets with the data you specified",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://swagger.io"
+      }
+    },
+    {
+      "name": "preset",
+      "description": "Manage your wake on lan specifications with presets"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/wol/wake": {
+      "post": {
+        "tags": [
+          "wol"
+        ],
+        "summary": "Sends a wake on lan packet",
+        "description": "Send a valid `MAC Address`, `IP or Hostname`, `Port` and optionally a `secoreOn` password via POST to the API. The data has to be provided as form data. The API will then resolve the hostname (for use with ddns) or use the IP directly, depending on your input and send out the magic packet.",
+        "consumes": [
+          "application/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Information for the magic packet",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WoL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Magic packet successfully sent."
+          },
+          "400": {
+            "description": "Invalid input. Returns a JSON with the error messages as an array."
+          }
+        }
+      }
+    },
+    "/wol/add": {
+      "post": {
+        "tags": [
+          "preset"
+        ],
+        "summary": "Create a new preset",
+        "description": "Requires the same data as the `/wol` route, but additionally needs a name for that preset. This way you can later call your preset by secureOn and the name; together they form the primary key for a preset. For this reason, the secureOn password is not optional anymore.",
+        "operationId": "createPreset",
+        "consumes": [
+          "application/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Created preset object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Preset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Magic packet successfully sent."
+          },
+          "400": {
+            "description": "Invalid input. Returns a JSON with the error messages as an array."
+          }
+        }
+      }
+    },
+    "/wol/wakepreset": {
+      "post": {
+        "tags": [
+          "preset"
+        ],
+        "summary": "Sends a magic packet with the data from a preset.",
+        "description": "Requires the secureOn password and the name of the preset to identify it and retrieve the data for sending the packet.",
+        "consumes": [
+          "application/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Name and password for preset",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WakePreset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Magic packet successfully sent."
+          },
+          "400": {
+            "description": "Invalid input. Returns a JSON with the error messages as an array."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "WoL": {
+      "type": "object",
+      "properties": {
+        "mac_address": {
+          "type": "string"
+        },
+        "ip_or_hostname": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "secureon": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "WoL"
+      }
+    },
+    "Preset": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mac_address": {
+          "type": "string"
+        },
+        "ip_or_hostname": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "secureon": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "Preset"
+      }
+    },
+    "WakePreset": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "secureon": {
+          "type": "string"
+        }
+      },
+      "xml": {
+        "name": "WakePreset"
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
   }
 }
